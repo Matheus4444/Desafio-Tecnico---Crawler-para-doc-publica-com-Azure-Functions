@@ -1,10 +1,10 @@
 import logging
-import requests
-from bs4 import BeautifulSoup
 import os
 from urllib.parse import urlparse, urljoin
 import azure.functions as func
 import re
+import requests
+from bs4 import BeautifulSoup
 
 def save_html(url, base_directory, link_text=None):
     try:
@@ -66,7 +66,6 @@ def crawl(url, base_directory, visited, link_text=None):
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('HTTP trigger function processed a request.')
 
-    # URL of the documentation to crawl
     url = req.params.get('url')
     if not url:
         return func.HttpResponse("Please provide a URL to crawl.", status_code=400)
