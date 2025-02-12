@@ -6,6 +6,9 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
+def sanitize_filename(filename):
+    return re.sub(r'[<>:"/\\|?*]', '_', filename)
+
 def save_html(url, base_directory, link_text=None):
     try:
         # Perform the web request
@@ -27,10 +30,10 @@ def save_html(url, base_directory, link_text=None):
         # Determine the file name
         if link_text:
             # Sanitize link_text to create a valid file name
-            sanitized_link_text = re.sub(r'[\/\\]', '_', link_text)
+            sanitized_link_text = sanitize_filename(link_text)
             file_name = os.path.join(directory, f"{sanitized_link_text}.html")
         else:
-            file_name = os.path.join(directory, os.path.basename(path) or 'index.html')
+            file_name = os.path.join(directory, sanitize_filename(os.path.basename(path) or 'index.html'))
 
         # Save the HTML content to a file
         with open(file_name, 'w', encoding='utf-8') as file:
@@ -60,6 +63,8 @@ def crawl(url, base_directory, visited, link_text=None):
     for link in soup.find_all('a', href=True):
         href = link['href']
         next_url = urljoin(url, href)
+        if next_url.endswith('?'):
+            next_url = next_url[:-1]
         if urlparse(next_url).netloc == urlparse(url).netloc:
             crawl(next_url, base_directory, visited, link.get_text(strip=True) or None)
 

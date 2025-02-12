@@ -5,6 +5,7 @@ import azure.functions as func
 import re
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 def sanitize_filename(filename):
     return re.sub(r'[<>:"/\\|?*]', '_', filename)
@@ -50,7 +51,7 @@ def save_html(url, base_directory, link_text=None):
         logging.error(f'Error creating directory or writing file: {str(e)}')
         return None, None
 
-def crawl(url, base_directory, visited, link_text=None):
+def crawl(url, base_directory, visited, last_crawl_date, link_text=None):
     if url in visited:
         return
     visited.add(url)
@@ -66,17 +67,23 @@ def crawl(url, base_directory, visited, link_text=None):
         if next_url.endswith('?'):
             next_url = next_url[:-1]
         if urlparse(next_url).netloc == urlparse(url).netloc:
-            crawl(next_url, base_directory, visited, link.get_text(strip=True) or None)
+            mod_date_str = link.get('data-mod-date')
+            if mod_date_str:
+                mod_date = datetime.strptime(mod_date_str, '%Y-%m-%d')
+                if mod_date > last_crawl_date:
+                    crawl(next_url, base_directory, visited, last_crawl_date, link.get_text(strip=True) or None)
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('HTTP trigger function processed a request.')
+def main(mytimer: func.TimerRequest) -> None:
+    logging.info('Timer trigger function executed at %s', mytimer.schedule_status['Last'])
 
-    url = req.params.get('url')
-    if not url:
-        return func.HttpResponse("Please provide a URL to crawl.", status_code=400)
+    # URL of the documentation to crawl
+    url = "https://sapiensia.atlassian.net/wiki/spaces/SIA/overview?homepageId=578912377"
+
+    # Date of the last crawl
+    last_crawl_date = datetime(2025, 2, 1)  # Example date, should be dynamically set
 
     visited = set()
     base_directory = 'collected_docs'
-    crawl(url, base_directory, visited)
+    crawl(url, base_directory, visited, last_crawl_date)
 
-    return func.HttpResponse(f'Documentation successfully crawled and saved.', status_code=200)
+    logging.info('Documentation successfully crawled and saved.')
