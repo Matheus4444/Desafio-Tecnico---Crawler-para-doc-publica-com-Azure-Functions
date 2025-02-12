@@ -20,8 +20,8 @@ This project is a web crawler implemented using Azure Functions. It fetches HTML
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/CrawlerFunctionHttp.git
-    cd CrawlerFunctionHttp
+    git clone https://github.com/Matheus4444/Desafio-Tecnico---Crawler-para-doc-publica-com-Azure-Functions
+    cd Desafio-Tecnico---Crawler-para-doc-publica-com-Azure-Functions
     ```
 
 2. Install the required Python packages:
