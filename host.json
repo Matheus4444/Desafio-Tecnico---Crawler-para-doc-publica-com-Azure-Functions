@@ -4,7 +4,16 @@
     "logLevel": {
       "Function": "Information",
       "Host.Results": "Information",
-      "Host.Triggers": "Information"
+      "Host.Triggers": "Information",
+      "Host.Startup": "Information",
+      "Host.Executor": "Information",
+      "Host.Aggregator": "Information",
+      "default": "Information"
+    },
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true
+      }
     }
   },
   "functionTimeout": "00:10:00"

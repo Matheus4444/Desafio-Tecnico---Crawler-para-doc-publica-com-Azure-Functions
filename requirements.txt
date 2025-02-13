@@ -2,3 +2,4 @@ requests
 beautifulsoup4
 azure-functions
 re
+atlassian-python-api

@@ -2,6 +2,14 @@
   "IsEncrypted": false,
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "python"
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": ""
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Host": "Information",
+      "Function": "Information"
+    }
   }
 }
