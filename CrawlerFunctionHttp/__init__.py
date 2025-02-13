@@ -35,22 +35,24 @@ def get_page_title(confluence, page_id):
         logging.error(f'Error fetching page title for ID {page_id}: {str(e)}')
         return 'index'
 
-def crawl_confluence(confluence, space_key, base_directory):
-    pages = confluence.get_all_pages_from_space(space_key, start=0, limit=1000, expand='body.storage')
-    for page in pages:
-        page_id = page['id']
-        title = get_page_title(confluence, page_id)
-        sanitized_title = sanitize_filename(title)
-        
-        # Create directory structure based on page title
-        directory = os.path.join(base_directory, space_key)
-        if not os.path.exists(directory):
-            os.makedirs(directory, exist_ok=True)
-        file_name = os.path.join(directory, f"{sanitized_title}.html")
-        
-        content = fetch_confluence_page(confluence, page_id)
-        if content:
-            save_html(content, directory, file_name)
+def crawl_confluence(confluence, page_id, base_directory):
+    title = get_page_title(confluence, page_id)
+    sanitized_title = sanitize_filename(title)
+    
+    # Create directory structure based on page title
+    directory = os.path.join(base_directory, sanitized_title)
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+    file_name = os.path.join(directory, f"{sanitized_title}.html")
+    
+    content = fetch_confluence_page(confluence, page_id)
+    if content:
+        save_html(content, directory, file_name)
+    
+    # Recursively crawl child pages
+    child_pages = confluence.get_child_pages(page_id)
+    for child_page in child_pages:
+        crawl_confluence(confluence, child_page['id'], directory)
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('HTTP trigger function processed a request.')
@@ -66,7 +68,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
         base_directory = 'collected_docs'
-        crawl_confluence(confluence, space_key, base_directory)
+        root_pages = confluence.get_all_pages_from_space(space_key, start=0, limit=1000, expand='body.storage')
+        for root_page in root_pages:
+            crawl_confluence(confluence, root_page['id'], base_directory)
 
         return func.HttpResponse(f'Documentation successfully crawled and saved.', status_code=200)
     except Exception as e:
